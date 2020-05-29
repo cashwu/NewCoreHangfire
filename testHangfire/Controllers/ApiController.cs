@@ -23,17 +23,19 @@ namespace testHangfire.Controllers
             };
 
             var t1 = _backgroundJobClient.Enqueue<TestJob>(a => a.Execute(testJob, null));
-
+            
             Console.WriteLine($" t1 - {t1}");
             
-            testJob = new TestJobArg
-            {
-                Id = 456
-            };
-
-            var t2 = _backgroundJobClient.Schedule<TestJob>(a => a.Execute(testJob, null), TimeSpan.FromMinutes(1));
-
-            Console.WriteLine($" t2 - {t2}");
+            // RecurringJob.AddOrUpdate<TestJob2>(a => a.Execute(testJob, null), Cron.Minutely);
+            
+            // testJob = new TestJobArg
+            // {
+            //     Id = 456
+            // };
+            //
+            // var t2 = _backgroundJobClient.Schedule<TestJob>(a => a.Execute(testJob, null), TimeSpan.FromMinutes(1));
+            //
+            // Console.WriteLine($" t2 - {t2}");
 
             return Ok();
         }

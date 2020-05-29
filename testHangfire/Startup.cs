@@ -1,3 +1,4 @@
+using System;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Storage.SQLite;
@@ -28,12 +29,12 @@ namespace testHangfire
                 config
                     .UseSimpleAssemblyNameTypeSerializer()
                     .UseRecommendedSerializerSettings()
-                    .UseSQLiteStorage();
+                    .UseSQLiteStorage()
+                    .WithJobExpirationTimeout(TimeSpan.FromDays(2));
 
                 config.UseConsole();
 
-                config.UseFilter(new LogEverythingAttribute())
-                      .UseFilter(new ProlongExpirationTimeAttribute());
+                config.UseFilter(new LogEverythingAttribute());
 
                 // config.UseFilter(new ProlongExpirationTimeAttribute());
             });
@@ -78,7 +79,7 @@ namespace testHangfire
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 ServerName = "job test",
-                WorkerCount = 1,
+                WorkerCount = 2,
                 Queues = new[] { "low" },
             });
 
