@@ -1,12 +1,14 @@
 using System;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.Console;
+using Hangfire.Dashboard.Dark;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 
 namespace testHangfire
 {
@@ -36,36 +38,21 @@ namespace testHangfire
 
                 config.UseFilter(new LogEverythingAttribute());
 
+                // config.UseDarkDashboard();
+
                 // config.UseFilter(new ProlongExpirationTimeAttribute());
             });
+        }
 
-            // services.AddHangfireServer();
-
-            // GlobalConfiguration.Configuration
-            //                    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-            //                    .UseSimpleAssemblyNameTypeSerializer()
-            //                    .UseRecommendedSerializerSettings()
-            //                    .UseSQLiteStorage("", new SQLiteStorageOptions());
-            // .UseSqlServerStorage("Database=Hangfire.Sample; Integrated Security=True;", new SqlServerStorageOptions
-            // {
-            //     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-            //     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-            //     QueuePollInterval = TimeSpan.Zero,
-            //     UseRecommendedIsolationLevel = true,
-            //     UsePageLocksOnDequeue = true,
-            //     DisableGlobalLocks = true
-            // })
-            // .UseBatches()
-            // .UsePerformanceCounters();
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            builder.RegisterType<ConstHelper>().SingleInstance();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            GlobalConfiguration.Configuration.UseAutofacActivator(app.ApplicationServices.GetAutofacRoot());
 
             app.UseHangfireDashboard($"/dashboard", new DashboardOptions
             {
@@ -91,6 +78,14 @@ namespace testHangfire
             {
                 endpoints.MapControllers();
             });
+        }
+    }
+
+    public class ConstHelper
+    {
+        public int Test()
+        {
+            return 123;
         }
     }
 }
