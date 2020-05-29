@@ -1,15 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.Console;
+using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace testHangfire
 {
@@ -26,6 +22,40 @@ namespace testHangfire
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddHangfire(config =>
+            {
+                config
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseSQLiteStorage();
+
+                config.UseConsole();
+
+                config.UseFilter(new LogEverythingAttribute())
+                      .UseFilter(new ProlongExpirationTimeAttribute());
+
+                // config.UseFilter(new ProlongExpirationTimeAttribute());
+            });
+
+            // services.AddHangfireServer();
+
+            // GlobalConfiguration.Configuration
+            //                    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            //                    .UseSimpleAssemblyNameTypeSerializer()
+            //                    .UseRecommendedSerializerSettings()
+            //                    .UseSQLiteStorage("", new SQLiteStorageOptions());
+            // .UseSqlServerStorage("Database=Hangfire.Sample; Integrated Security=True;", new SqlServerStorageOptions
+            // {
+            //     CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            //     SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            //     QueuePollInterval = TimeSpan.Zero,
+            //     UseRecommendedIsolationLevel = true,
+            //     UsePageLocksOnDequeue = true,
+            //     DisableGlobalLocks = true
+            // })
+            // .UseBatches()
+            // .UsePerformanceCounters();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,7 +66,21 @@ namespace testHangfire
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            app.UseHangfireDashboard($"/dashboard", new DashboardOptions
+            {
+                StatsPollingInterval = 2000,
+                DisplayStorageConnectionString = true,
+
+                // Authorization = new[] { new CustomAuthorizationFilter() },
+                IsReadOnlyFunc = context => true
+            });
+
+            app.UseHangfireServer(new BackgroundJobServerOptions
+            {
+                ServerName = "job test",
+                WorkerCount = 1,
+                Queues = new[] { "low" },
+            });
 
             app.UseRouting();
 
