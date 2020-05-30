@@ -3,7 +3,8 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.Console;
-using Hangfire.Dashboard.Dark;
+using Hangfire.Heartbeat;
+using Hangfire.Heartbeat.Server;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,8 @@ namespace testHangfire
                 // config.UseDarkDashboard();
 
                 // config.UseFilter(new ProlongExpirationTimeAttribute());
+                
+                config.UseHeartbeatPage(TimeSpan.FromSeconds(1));
             });
         }
 
@@ -53,22 +56,23 @@ namespace testHangfire
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             GlobalConfiguration.Configuration.UseAutofacActivator(app.ApplicationServices.GetAutofacRoot());
-            
+
             app.UseHangfireDashboard($"/dashboard", new DashboardOptions
             {
                 StatsPollingInterval = 2000,
                 DisplayStorageConnectionString = true,
-                
+
                 // Authorization = new[] { new CustomAuthorizationFilter() },
                 IsReadOnlyFunc = context => true
-            }, new SQLiteStorage("Hangfire.db", new SQLiteStorageOptions()));
+            });
 
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 ServerName = "job test",
+
                 // WorkerCount = 2,
                 Queues = new[] { "low" },
-            });
+            }, new[] { new ProcessMonitor(TimeSpan.FromSeconds(1))});
 
             app.UseRouting();
 
