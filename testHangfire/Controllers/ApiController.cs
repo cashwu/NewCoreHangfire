@@ -53,17 +53,23 @@ namespace testHangfire.Controllers
                                                                    "Asia/Taipei");
 
             RecurringJob.AddOrUpdate<TestJob2>($"jobname444 {Guid.NewGuid()}", a => a.Execute(testJob, null),
-                                              "10 11 * * *" ,
+                                               "10 11 * * *",
                                                customTimeZone);
 
-            // testJob = new TestJobArg
-            // {
-            //     Id = 456
-            // };
-            //
-            // var t2 = _backgroundJobClient.Schedule<TestJob>(a => a.Execute(testJob, null), TimeSpan.FromMinutes(1));
-            //
-            // Console.WriteLine($" t2 - {t2}");
+            return Ok();
+        }
+
+        [Route("/api/test3")]
+        public IActionResult Index3()
+        {
+            var testJob = new TestJobArg
+            {
+                Id = (int)DateTime.Now.Ticks
+            };
+
+            var t1 = _backgroundJobClient.Enqueue<TestJob3>(a => a.Execute(testJob, null));
+
+            Console.WriteLine($" t1 - {t1}");
 
             return Ok();
         }

@@ -5,6 +5,7 @@ using Hangfire;
 using Hangfire.Console;
 using Hangfire.Heartbeat;
 using Hangfire.Heartbeat.Server;
+using Hangfire.JobsLogger;
 using Hangfire.Storage.SQLite;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,6 +45,8 @@ namespace testHangfire
                 // config.UseFilter(new ProlongExpirationTimeAttribute());
                 
                 config.UseHeartbeatPage(TimeSpan.FromSeconds(1));
+
+                config.UseJobsLogger();
             });
         }
 
