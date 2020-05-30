@@ -53,20 +53,20 @@ namespace testHangfire
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             GlobalConfiguration.Configuration.UseAutofacActivator(app.ApplicationServices.GetAutofacRoot());
-
+            
             app.UseHangfireDashboard($"/dashboard", new DashboardOptions
             {
                 StatsPollingInterval = 2000,
                 DisplayStorageConnectionString = true,
-
+                
                 // Authorization = new[] { new CustomAuthorizationFilter() },
                 IsReadOnlyFunc = context => true
-            });
+            }, new SQLiteStorage("Hangfire.db", new SQLiteStorageOptions()));
 
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 ServerName = "job test",
-                WorkerCount = 2,
+                // WorkerCount = 2,
                 Queues = new[] { "low" },
             });
 
